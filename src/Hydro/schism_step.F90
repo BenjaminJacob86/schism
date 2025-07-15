@@ -2473,8 +2473,29 @@
         tau_bot_node(1,i)=prho(kbp(i)+1,i)*Cdp(i)*tmp*uu2(kbp(i)+1,i) !unit: kg/m/s^2 (Pa)
         tau_bot_node(2,i)=prho(kbp(i)+1,i)*Cdp(i)*tmp*vv2(kbp(i)+1,i)
         tau_bot_node(3,i)=prho(kbp(i)+1,i)*Cdp(i)*tmp*tmp
-      enddo !i
-!$OMP end do
+
+            ! --- Uprooting logic ---  not yet suited for non ganthy choces
+            if (iveg /= 0) then
+              tau_b = tau_bot_node(3,i)
+              tau_crit = 1.0d0         ! Example threshold [Pa]
+              uproot_rate = 0.05d0     ! Fraction lost per step
+            
+              if (tau_b > tau_crit) then
+                if (iveg == 1) then
+                  ! Apply uprooting to each vertical bin
+                  do kk = 1, nbins_veg_vert+1
+                    veg_vert_scale_N(kk) = veg_vert_scale_N(kk) * (1.d0 - uproot_rate)
+                    if (veg_vert_scale_N(kk) < 1.d-6) veg_vert_scale_N(kk) = 0.d0
+                  enddo
+            
+                else if (iveg == 2) then
+                  veg_nv_unbent(i) = veg_nv_unbent(i) * (1.d0 - uproot_rate)
+                  if (veg_nv_unbent(i) < 1.d-6) veg_nv_unbent(i) = 0.d0
+                endif
+              endif
+            endif
+      enddo
+      !$OMP end do
 
 !     Add vertical variation to veg_alpha and compute vertical mean etc
       if(iveg/=0) then
