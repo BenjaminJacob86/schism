@@ -2497,6 +2497,22 @@
       enddo
       !$OMP end do
 
+!BJ debug write section
+
+if (iveg /= 0 .and. mod(it, ihfskip) == 0 .and. my_rank == 0) then  ! write every ihfskip (usally 1 day) steps
+  write(filename,'(A,I6.6,A)') 'veg_debug_', it, '.dat'
+  open(unit=99, file=filename, status='unknown')
+  do i = 1, npa
+    if (idry(i) == 0) then
+      !write(99,'(I6,1X,F10.6,1X,F10.6)') i, veg_nv(i), veg_alpha3D(kbp(i),i)
+      write(99,'(I6,1X,F10.6,1X)') i, veg_nv(i)
+    endif
+  enddo
+
+  close(99)
+endif
+
+
 !     Add vertical variation to veg_alpha and compute vertical mean etc
       if(iveg/=0) then
         if(iveg==1) then !specify vertical variation
